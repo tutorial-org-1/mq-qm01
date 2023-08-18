@@ -1,0 +1,102 @@
+# Default values for ibm-mq.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+name: qm1
+# Acceptable versions available via https://www.ibm.com/docs/en/ibm-mq/9.2?topic=openshift-release-history-mq-operator
+# This field maps directly to queuemanager.spec.version
+version: 9.2.3.0-r1
+web:
+  enabled: true
+
+# Acceptable license keys available via https://www.ibm.com/docs/en/ibm-mq/9.2?topic=mqibmcomv1beta1-licensing-reference
+# This field maps directly to queuemanager.spec.license
+license:
+  accept: true
+  license: L-RJON-BZFQU2
+  halicense: L-RJON-BZFQU2
+  use: NonProduction
+
+image:
+  repository: replace
+  tag: replace
+  pullPolicy: Always
+
+queuemanager:
+  debug: false
+  imagePullPolicy: IfNotPresent
+  livenessProbe:
+    failureThreshold: 1
+    initialDelaySeconds: 90
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 5
+  logFormat: Basic
+  metrics:
+    enabled: true
+  name: QM1
+  readinessProbe:
+    failureThreshold: 1
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    successThreshold: 1
+    timeoutSeconds: 3
+  resources:
+    limits:
+      cpu: "1"
+      memory: 1Gi
+    requests:
+      cpu: "1"
+      memory: 1Gi
+
+storage:
+  persistedData:
+    enabled: false
+  queueManager:
+    type: ephemeral
+    hatype: persistent-claim
+    size: 2Gi
+  recoveryLogs:
+    enabled: false
+
+availability:
+  type: SingleInstance
+  hatype: NativeHA
+
+mqsc:
+  configmap: mqsc-configmap
+  name: config.mqsc
+
+ini:
+  configmap:
+  name:
+
+securityContext:
+  initVolumeAsRoot: false
+
+template:
+  pod:
+    containers:
+    - name: qmgr
+      # env:
+      # - name: MQSNOAUT
+      #   value: "yes"
+
+configmap:
+  path: config
+  pathWithSecurity: security
+
+cert:
+  secretName: mq-server-cert
+
+terminationGracePeriodSeconds: 30
+
+tracing:
+  agent: {}
+  collector: {}
+  enabled: false
+  namespace: ""
+
+security: false
+
+ha: false

@@ -1,0 +1,78 @@
+apiVersion: mq.ibm.com/v1beta1
+kind: QueueManager
+metadata:
+  name: qm1
+  annotations:
+    argocd.argoproj.io/sync-wave: "300"
+    helm.sh/hook-weight: "300"
+spec:
+  license:
+    accept: true
+
+    license: L-RJON-BZFQU2
+
+    use: NonProduction
+  queueManager:
+    debug: false
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 1
+      initialDelaySeconds: 90
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 5
+    logFormat: Basic
+    metrics:
+      enabled: true
+    name: QM1
+    mqsc:
+      - configMap:
+          name: mqsc-configmap
+          items:
+            - static-definitions.mqsc
+    readinessProbe:
+      failureThreshold: 1
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      successThreshold: 1
+      timeoutSeconds: 3
+    resources:
+      limits:
+        cpu: "1"
+        memory: 1Gi
+      requests:
+        cpu: "1"
+        memory: 1Gi
+
+    availability:
+      type: SingleInstance
+
+    image: "replace"
+    imagePullPolicy: Always
+
+    storage:
+      persistedData:
+        enabled: false
+      queueManager:
+        type: ephemeral
+      recoveryLogs:
+        enabled: false
+
+  securityContext:
+    initVolumeAsRoot: false
+  template:
+    pod:
+      containers:
+      - name: qmgr
+        env:
+        - name: MQSNOAUT
+          value: "yes"
+  terminationGracePeriodSeconds: 30
+  tracing:
+    agent: {}
+    collector: {}
+    enabled: false
+    namespace: ""
+  version: 9.2.3.0-r1
+  web:
+    enabled: true

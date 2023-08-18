@@ -1,0 +1,17 @@
+resources:
+- ./queuemanager.yaml
+
+generatorOptions:
+ disableNameSuffixHash: true
+# We use a configMapGenerator because it allows us to build up the mqsc from regular MQSC files.
+configMapGenerator:
+# Create an MQSC configMap using generic MQSC which will be added to all queue managers and applied during bootstrap.
+- name: mqsc-configmap
+  behavior: create
+  files:
+  - static-definitions.mqsc
+
+# Add the configMap that will be used for dynamic updates, this should be used queue manager wide i.e. stay the same in each environment.
+components:
+- ../../components/dynamic-mqsc/generic-qmgr
+- ../../components/scripts

@@ -1,0 +1,19 @@
+apiVersion: mq.ibm.com/v1beta1
+kind: QueueManager
+metadata:
+  name: qm1
+  annotations:
+    argocd.argoproj.io/sync-wave: "300"
+    helm.sh/hook-weight: "300"
+spec:
+  queueManager:
+    storage:
+      queueManager:
+        class: ibmc-block-gold
+        type: persistent-claim
+      persistedData:
+        enabled: true
+        class: ibmc-block-gold
+      recoveryLogs:
+        enabled: true
+        class: ibmc-block-gold

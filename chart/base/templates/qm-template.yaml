@@ -1,0 +1,82 @@
+apiVersion: mq.ibm.com/v1beta1
+kind: QueueManager
+metadata:
+  name: {{ .Values.name }}
+  annotations:
+    argocd.argoproj.io/sync-wave: "300"
+    helm.sh/hook-weight: "300"
+spec:
+  license:
+    accept: {{ .Values.license.accept }}
+    {{ if eq .Values.ha true }}
+    license: {{ .Values.license.halicense }}
+    {{ else }}
+    license: {{ .Values.license.license }}
+    {{ end }}
+    use: {{ .Values.license.use }}
+  queueManager:
+    {{- toYaml .Values.queuemanager | nindent 4 }}
+    {{ if eq .Values.ha true }}
+    availability:
+      type: {{ .Values.availability.hatype }}
+      tls:
+        secretName: {{ .Values.cert.secretName }}
+        cipherSpec: ANY_TLS12_OR_HIGHER
+    {{ else }}
+    availability:
+      type: {{ .Values.availability.type }}
+    {{ end }}
+    image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+    imagePullPolicy: {{ .Values.image.pullPolicy }}
+    mqsc:
+    - configMap:
+        name: {{ .Values.mqsc.configmap }}
+        items:
+        - {{ .Values.mqsc.name }}
+    {{ if eq .Values.ha true }}
+    storage:
+      queueManager:
+        size: {{ .Values.storage.queueManager.size }}
+        type: {{ .Values.storage.queueManager.hatype }}
+    {{ else }}
+    storage:
+      persistedData:
+        enabled: {{ .Values.storage.persistedData.enabled }}
+      queueManager:
+        type: {{ .Values.storage.queueManager.type }}
+      recoveryLogs:
+        enabled: {{ .Values.storage.recoveryLogs.enabled }}
+    {{ end }}
+  securityContext:
+    initVolumeAsRoot: {{ .Values.securityContext.initVolumeAsRoot }}
+  template:
+    pod:
+      containers:
+      - name: qmgr
+        {{- if eq .Values.security false }}
+        env:
+        - name: MQSNOAUT
+          value: "yes"
+        {{- end }}
+  terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+  tracing:
+    {{- toYaml .Values.tracing | nindent 4 }}
+  version: {{ .Values.version }}
+  web:
+    enabled: {{ .Values.web.enabled }}
+  {{- if eq .Values.security true }}
+  pki:
+    keys:
+      - name: certificate
+        secret:
+          items:
+            - tls.key
+            - tls.crt
+          secretName: {{ .Values.cert.secretName }}
+    trust:
+      - name: ca
+        secret:
+          items:
+            - ca.crt
+          secretName: {{ .Values.cert.secretName }}
+  {{- end }}
