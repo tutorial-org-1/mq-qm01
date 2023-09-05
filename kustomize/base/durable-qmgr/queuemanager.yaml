@@ -9,11 +9,11 @@ spec:
   queueManager:
     storage:
       queueManager:
-        class: ibmc-block-gold
+        class: ibmc-vpc-block-general-purpose
         type: persistent-claim
       persistedData:
         enabled: true
-        class: ibmc-block-gold
+        class: ibmc-vpc-block-general-purpose
       recoveryLogs:
         enabled: true
-        class: ibmc-block-gold
+        class: ibmc-vpc-block-general-purpose
